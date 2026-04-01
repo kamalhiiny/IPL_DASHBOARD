@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IPL Analytics Dashboard 2024–25</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#07080F;--bg2:#0E1018;--bg3:#13151F;--bg4:#1A1D2A;
+  --accent:#FF6B2B;--gold:#FFB800;--teal:#00D4AA;--purple:#9B5DE5;
+  --blue:#4EA8DE;--red:#FF4757;--green:#2ED573;
+  --txt:#F0F2FF;--txt2:#9499B0;--txt3:#5A5F7A;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --card-shadow:0 4px 24px rgba(0,0,0,0.4);
+  --glow:0 0 30px rgba(255,107,43,0.15);
+  --radius:14px;--radius-sm:8px;
+  --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;
+  --transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--txt);font-family:var(--font-body);font-size:14px;line-height:1.6;overflow-x:hidden;}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:99px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+
+/* ─── HEADER ─── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,8,15,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;height:64px;
+}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 0 20px rgba(255,107,43,0.4);
+}
+.logo-text{font-family:var(--font-head);font-weight:800;font-size:18px;letter-spacing:-0.5px;}
+.logo-sub{font-size:11px;color:var(--txt2);letter-spacing:0.08em;text-transform:uppercase;margin-top:-2px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.live-badge{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(46,213,115,0.12);border:1px solid rgba(46,213,115,0.3);
+  color:var(--green);font-size:11px;font-weight:600;
+  padding:4px 10px;border-radius:99px;letter-spacing:0.05em;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+.btn-insights{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  border:none;color:#fff;font-family:var(--font-body);font-weight:600;
+  font-size:13px;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;
+  transition:var(--transition);box-shadow:0 4px 15px rgba(255,107,43,0.35);
+  letter-spacing:0.01em;
+}
+.btn-insights:hover{transform:translateY(-1px);box-shadow:0 6px 25px rgba(255,107,43,0.5);}
+.btn-insights:active{transform:translateY(0);}
+.btn-insights svg{flex-shrink:0;}
+.clock{font-size:12px;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:95px;text-align:right;}
+
+/* ─── MAIN ─── */
+main{max-width:1440px;margin:0 auto;padding:2rem;}
+
+/* ─── SECTION LABEL ─── */
+.section-title{
+  font-family:var(--font-head);font-weight:700;font-size:20px;
+  color:var(--txt);margin-bottom:1rem;letter-spacing:-0.3px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-title span{font-size:13px;font-weight:400;color:var(--txt2);margin-left:4px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ─── KPI CARDS ─── */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:2rem;}
+.kpi{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 18px;position:relative;overflow:hidden;transition:var(--transition);cursor:default;
+}
+.kpi::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.3s;
+  background:radial-gradient(ellipse at 0% 0%,var(--glow-color,rgba(255,107,43,0.08)),transparent 70%);
+}
+.kpi:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--card-shadow);}
+.kpi:hover::before{opacity:1;}
+.kpi-icon{font-size:20px;margin-bottom:10px;}
+.kpi-val{font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--txt);}
+.kpi-lbl{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
+.kpi-change{font-size:11px;font-weight:600;margin-top:6px;}
+.up{color:var(--green);}
+.neutral{color:var(--txt3);}
+
+/* ─── GRID LAYOUTS ─── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-7-5{display:grid;grid-template-columns:7fr 5fr;gap:16px;margin-bottom:16px;}
+.grid-5-7{display:grid;grid-template-columns:5fr 7fr;gap:16px;margin-bottom:16px;}
+
+/* ─── CARDS ─── */
+.card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px 24px;transition:var(--transition);
+}
+.card:hover{border-color:var(--border2);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.card-title{font-family:var(--font-head);font-weight:700;font-size:15px;letter-spacing:-0.2px;}
+.card-badge{
+  font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;
+  letter-spacing:0.06em;text-transform:uppercase;
+}
+.badge-orange{background:rgba(255,107,43,0.15);color:var(--accent);border:1px solid rgba(255,107,43,0.3);}
+.badge-gold{background:rgba(255,184,0,0.12);color:var(--gold);border:1px solid rgba(255,184,0,0.25);}
+.badge-teal{background:rgba(0,212,170,0.12);color:var(--teal);border:1px solid rgba(0,212,170,0.25);}
+.badge-purple{background:rgba(155,93,229,0.12);color:var(--purple);border:1px solid rgba(155,93,229,0.25);}
+.badge-blue{background:rgba(78,168,222,0.12);color:var(--blue);border:1px solid rgba(78,168,222,0.25);}
+
+/* ─── CHART WRAPPER ─── */
+.chart-wrap{position:relative;width:100%;}
+
+/* ─── TEAM FILTER ─── */
+.team-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem;}
+.team-chip{
+  padding:6px 14px;border-radius:99px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--txt2);font-size:12px;font-weight:600;
+  cursor:pointer;transition:var(--transition);letter-spacing:0.04em;
+}
+.team-chip:hover{border-color:var(--border2);color:var(--txt);}
+.team-chip.active{color:#fff;border-color:transparent;}
+
+/* ─── VENUE TABLE ─── */
+.venue-table{width:100%;border-collapse:collapse;}
+.venue-table th{
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--txt3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);
+}
+.venue-table td{
+  padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);
+  vertical-align:middle;
+}
+.venue-table tr:hover td{background:rgba(255,255,255,0.025);}
+.venue-table tr:last-child td{border-bottom:none;}
+
+/* ─── MINI BAR ─── */
+.mini-bar-track{
+  height:6px;border-radius:3px;background:var(--bg4);
+  overflow:hidden;width:80px;display:inline-block;vertical-align:middle;
+}
+.mini-bar-fill{height:100%;border-radius:3px;}
+
+/* ─── TOP SCORES TABLE ─── */
+.scores-table{width:100%;border-collapse:collapse;}
+.scores-table th{
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--txt3);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);
+}
+.scores-table td{padding:10px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03);}
+.scores-table tr:hover td{background:rgba(255,255,255,0.025);}
+.scores-table tr:last-child td{border-bottom:none;}
+.rank-num{
+  width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.r1{background:rgba(255,184,0,0.2);color:var(--gold);}
+.r2{background:rgba(200,210,220,0.15);color:#aaa;}
+.r3{background:rgba(200,130,80,0.15);color:#cd7f32;}
+.rn{background:var(--bg4);color:var(--txt3);}
+.result-win{color:var(--green);font-weight:600;font-size:11px;}
+.result-loss{color:var(--red);font-weight:600;font-size:11px;}
+.team-tag{
+  display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;
+  font-weight:700;letter-spacing:0.05em;
+}
+
+/* ─── H2H COMPARISON ─── */
+.h2h-selectors{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.team-select{
+  flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--txt);
+  font-family:var(--font-body);font-size:13px;font-weight:500;
+  padding:10px 14px;border-radius:var(--radius-sm);cursor:pointer;outline:none;
+  transition:var(--transition);appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239499B0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.team-select:focus{border-color:var(--accent);}
+.vs-badge{
+  font-family:var(--font-head);font-size:16px;font-weight:800;
+  color:var(--txt2);flex-shrink:0;
+}
+.h2h-result{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;
+  margin-top:8px;
+}
+.h2h-side{text-align:center;}
+.h2h-big{font-family:var(--font-head);font-size:48px;font-weight:800;line-height:1;}
+.h2h-sub{font-size:11px;color:var(--txt2);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;}
+.h2h-bar{height:8px;border-radius:4px;background:var(--bg4);overflow:hidden;display:flex;}
+.h2h-bar-a{height:100%;border-radius:4px 0 0 4px;transition:width 0.6s ease;}
+.h2h-bar-b{height:100%;border-radius:0 4px 4px 0;flex:1;transition:width 0.6s ease;}
+.h2h-total{text-align:center;font-size:12px;color:var(--txt3);margin-top:8px;}
+
+/* ─── INSIGHTS MODAL ─── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:20px;
+  width:min(680px,92vw);max-height:85vh;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.7);
+  animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px) scale(0.97);}to{opacity:1;transform:none;}}
+.modal-head{
+  padding:24px 28px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.modal-head-left{display:flex;align-items:center;gap:12px;}
+.modal-icon{
+  width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 4px 15px rgba(255,107,43,0.4);
+}
+.modal-title{font-family:var(--font-head);font-size:20px;font-weight:800;letter-spacing:-0.3px;}
+.modal-subtitle{font-size:12px;color:var(--txt2);margin-top:2px;}
+.modal-close{
+  width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--bg3);color:var(--txt2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  transition:var(--transition);
+}
+.modal-close:hover{background:var(--bg4);color:var(--txt);}
+.modal-body{padding:24px 28px;overflow-y:auto;flex:1;}
+.insight-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;margin-bottom:12px;
+  display:flex;gap:14px;align-items:flex-start;
+  opacity:0;transform:translateY(12px);
+  transition:opacity 0.35s ease,transform 0.35s ease;
+}
+.insight-card.visible{opacity:1;transform:none;}
+.insight-num{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-size:13px;font-weight:800;
+}
+.insight-text strong{font-weight:600;color:var(--txt);}
+.insight-text{font-size:13px;color:var(--txt2);line-height:1.65;}
+.modal-foot{
+  padding:16px 28px;border-top:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-foot-note{font-size:11px;color:var(--txt3);}
+.btn-close-modal{
+  background:var(--bg4);border:1px solid var(--border2);color:var(--txt2);
+  font-family:var(--font-body);font-size:13px;font-weight:500;
+  padding:8px 18px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);
+}
+.btn-close-modal:hover{color:var(--txt);border-color:var(--border2);}
+
+/* ─── STAT BAR ROWS (Team Profile) ─── */
+.stat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.stat-row-label{font-size:12px;color:var(--txt2);width:90px;flex-shrink:0;}
+.stat-row-bar{flex:1;height:8px;border-radius:4px;background:var(--bg4);overflow:hidden;margin:0 12px;}
+.stat-row-fill{height:100%;border-radius:4px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);}
+.stat-row-val{font-size:12px;font-weight:600;color:var(--txt);width:40px;text-align:right;flex-shrink:0;}
+
+/* ─── DONUT LEGEND ─── */
+.legend-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.legend-lbl{font-size:12px;color:var(--txt2);}
+.legend-val{font-size:12px;font-weight:600;color:var(--txt);margin-left:auto;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:900px){
+  .grid-2,.grid-7-5,.grid-5-7,.grid-3{grid-template-columns:1fr;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  header{padding:0 1rem;}
+  main{padding:1rem;}
+}
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .logo-sub,.clock{display:none;}
+}
+
+/* ─── PROGRESS RING ─── */
+.progress-ring{display:inline-block;position:relative;width:100px;height:100px;}
+.progress-ring svg{transform:rotate(-90deg);}
+.progress-ring text{transform:rotate(90deg);transform-origin:50px 50px;fill:var(--txt);font-family:var(--font-head);font-weight:800;}
+
+/* ─── DIVIDER ─── */
+.divider{height:1px;background:var(--border);margin:2rem 0;}
+
+/* ─── SPARKLINE BAR ─── */
+.spark-bars{display:flex;align-items:flex-end;gap:3px;height:40px;}
+.spark-bar{flex:1;border-radius:3px 3px 0 0;min-width:4px;transition:height 0.6s ease,opacity 0.2s;}
+.spark-bar:hover{opacity:0.7;}
+
+/* ─── FOOTER ─── */
+footer{
+  text-align:center;padding:2rem;
+  font-size:12px;color:var(--txt3);border-top:1px solid var(--border);
+  margin-top:2rem;
+}
+footer strong{color:var(--txt2);}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏏</div>
+    <div>
+      <div class="logo-text">IPL Analytics</div>
+      <div class="logo-sub">Season 2024–25 · 500 Matches</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>Live Data</div>
+    <div class="clock" id="clock"></div>
+    <button class="btn-insights" onclick="openInsights()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zm0 2.5a.75.75 0 110 1.5.75.75 0 010-1.5zm0 2.75a.75.75 0 01.75.75v2.75a.75.75 0 11-1.5 0V7.5A.75.75 0 017 6.75z" fill="white"/>
+      </svg>
+      View Insights
+    </button>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi" style="--glow-color:rgba(255,107,43,0.1)">
+      <div class="kpi-icon">🏟</div>
+      <div class="kpi-val" id="kv-matches">0</div>
+      <div class="kpi-lbl">Total Matches</div>
+      <div class="kpi-change neutral">Mar 2024 – Jul 2025</div>
+    </div>
+    <div class="kpi" style="--glow-color:rgba(255,184,0,0.1)">
+      <div class="kpi-icon">🏆</div>
+      <div class="kpi-val" id="kv-teams">0</div>
+      <div class="kpi-lbl">IPL Teams</div>
+      <div class="kpi-change neutral">CSK · MI · RCB · KKR…</div>
+    </div>
+    <div class="kpi" style="--glow-color:rgba(46,213,115,0.08)">
+      <div class="kpi-icon">🏏</div>
+      <div class="kpi-val" id="kv-avgruns">0</div>
+      <div class="kpi-lbl">Avg Runs / Inning</div>
+      <div class="kpi-change up">↑ High scoring season</div>
+    </div>
+    <div class="kpi" style="--glow-color:rgba(78,168,222,0.1)">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-val" id="kv-avgsr">0</div>
+      <div class="kpi-lbl">Avg Strike Rate</div>
+      <div class="kpi-change up">↑ Explosive batting</div>
+    </div>
+    <div class="kpi" style="--glow-color:rgba(155,93,229,0.1)">
+      <div class="kpi-icon">🎯</div>
+      <div class="kpi-val" id="kv-maxruns">0</div>
+      <div class="kpi-lbl">Highest Score</div>
+      <div class="kpi-change neutral">RR vs CSK · Chennai</div>
+    </div>
+    <div class="kpi" style="--glow-color:rgba(0,212,170,0.08)">
+      <div class="kpi-icon">📍</div>
+      <div class="kpi-val" id="kv-venues">0</div>
+      <div class="kpi-lbl">Venues</div>
+      <div class="kpi-change neutral">8 cities · all India</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Win Rate + Avg Runs -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Win Rate by Team</div>
+        <span class="card-badge badge-orange">Season 2024–25</span>
+      </div>
+      <div class="chart-wrap" style="height:260px"><canvas id="chartWinRate"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Average Runs per Inning</div>
+        <span class="card-badge badge-gold">Batting Avg</span>
+      </div>
+      <div class="chart-wrap" style="height:260px"><canvas id="chartAvgRuns"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Strike Rate + Economy + Runs Distribution -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Strike Rate</div>
+        <span class="card-badge badge-teal">Batting</span>
+      </div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartSR"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Economy Rate</div>
+        <span class="card-badge badge-purple">Bowling</span>
+      </div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartEcon"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Runs Distribution</div>
+        <span class="card-badge badge-blue">Histogram</span>
+      </div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartRunsDist"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Monthly Trend -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <div class="card-title">Monthly Avg Runs Trend <span>Mar 2024 – Jul 2025</span></div>
+      <span class="card-badge badge-orange">Timeline</span>
+    </div>
+    <div class="chart-wrap" style="height:200px"><canvas id="chartMonthly"></canvas></div>
+  </div>
+
+  <!-- ROW 4: Venue Table + Top Scores -->
+  <div class="grid-7-5">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Venue Analysis</div>
+        <span class="card-badge badge-teal">8 Stadiums</span>
+      </div>
+      <table class="venue-table">
+        <thead>
+          <tr>
+            <th>Venue</th>
+            <th>Matches</th>
+            <th>Avg Runs</th>
+            <th>Win %</th>
+            <th>Avg SR</th>
+          </tr>
+        </thead>
+        <tbody id="venue-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Top 10 Scores</div>
+        <span class="card-badge badge-gold">Record Innings</span>
+      </div>
+      <table class="scores-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Team</th><th>Opponent</th><th>Venue</th><th>Runs</th><th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="scores-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ROW 5: Head-to-Head + Team Profile -->
+  <div class="grid-5-7">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Head-to-Head</div>
+        <span class="card-badge badge-orange">Compare</span>
+      </div>
+      <div class="h2h-selectors">
+        <select class="team-select" id="h2h-a" onchange="updateH2H()">
+          <option value="CSK">CSK</option><option value="DC">DC</option>
+          <option value="KKR">KKR</option><option value="MI">MI</option>
+          <option value="PBKS">PBKS</option><option value="RCB">RCB</option>
+          <option value="RR">RR</option><option value="SRH">SRH</option>
+        </select>
+        <div class="vs-badge">VS</div>
+        <select class="team-select" id="h2h-b" onchange="updateH2H()">
+          <option value="MI">MI</option><option value="CSK">CSK</option>
+          <option value="KKR">KKR</option><option value="DC">DC</option>
+          <option value="PBKS">PBKS</option><option value="RCB">RCB</option>
+          <option value="RR">RR</option><option value="SRH">SRH</option>
+        </select>
+      </div>
+      <div class="h2h-result">
+        <div class="h2h-side">
+          <div class="h2h-big" id="h2h-wins-a" style="color:var(--accent)">–</div>
+          <div class="h2h-sub" id="h2h-label-a">CSK Wins</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--txt3);margin-bottom:8px" id="h2h-total-lbl">Total matches</div>
+          <div style="font-family:var(--font-head);font-size:32px;font-weight:800;color:var(--txt2)" id="h2h-total">–</div>
+        </div>
+        <div class="h2h-side">
+          <div class="h2h-big" id="h2h-wins-b" style="color:var(--blue)">–</div>
+          <div class="h2h-sub" id="h2h-label-b">MI Wins</div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="h2h-bar">
+          <div class="h2h-bar-a" id="h2h-bar-a" style="background:var(--accent);width:50%;"></div>
+          <div class="h2h-bar-b" id="h2h-bar-b" style="background:var(--blue);"></div>
+        </div>
+        <div class="h2h-total" id="h2h-pct">–</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Team Performance Profile</div>
+        <span class="card-badge badge-purple">All Stats</span>
+      </div>
+      <div style="margin-bottom:14px">
+        <select class="team-select" id="profile-team" onchange="updateProfile()" style="width:100%;margin-bottom:16px">
+          <option value="CSK">CSK – Chennai Super Kings</option>
+          <option value="DC">DC – Delhi Capitals</option>
+          <option value="KKR">KKR – Kolkata Knight Riders</option>
+          <option value="MI">MI – Mumbai Indians</option>
+          <option value="PBKS">PBKS – Punjab Kings</option>
+          <option value="RCB">RCB – Royal Challengers Bengaluru</option>
+          <option value="RR">RR – Rajasthan Royals</option>
+          <option value="SRH">SRH – Sunrisers Hyderabad</option>
+        </select>
+        <div class="stat-row">
+          <div class="stat-row-label">Win Rate</div>
+          <div class="stat-row-bar"><div class="stat-row-fill" id="pr-winrate" style="background:var(--accent);width:0%"></div></div>
+          <div class="stat-row-val" id="pv-winrate">–</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-label">Avg Runs</div>
+          <div class="stat-row-bar"><div class="stat-row-fill" id="pr-runs" style="background:var(--gold);width:0%"></div></div>
+          <div class="stat-row-val" id="pv-runs">–</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-label">Strike Rate</div>
+          <div class="stat-row-bar"><div class="stat-row-fill" id="pr-sr" style="background:var(--teal);width:0%"></div></div>
+          <div class="stat-row-val" id="pv-sr">–</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-label">Economy</div>
+          <div class="stat-row-bar"><div class="stat-row-fill" id="pr-econ" style="background:var(--purple);width:0%"></div></div>
+          <div class="stat-row-val" id="pv-econ">–</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-row-label">Avg Wickets</div>
+          <div class="stat-row-bar"><div class="stat-row-fill" id="pr-wk" style="background:var(--blue);width:0%"></div></div>
+          <div class="stat-row-val" id="pv-wk">–</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:0">
+          <div class="stat-row-label">Max Score</div>
+          <div class="stat-row-bar"><div class="stat-row-fill" id="pr-max" style="background:var(--red);width:0%"></div></div>
+          <div class="stat-row-val" id="pv-max">–</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 6: Win/Loss Radar -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Overall Win / Loss Split</div>
+        <span class="card-badge badge-teal">500 Innings</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;margin-top:8px">
+        <div class="chart-wrap" style="height:200px;width:200px;flex-shrink:0"><canvas id="chartDonut"></canvas></div>
+        <div style="flex:1">
+          <div class="legend-row"><div class="legend-dot" style="background:var(--green)"></div><div class="legend-lbl">Wins</div><div class="legend-val">245 (49%)</div></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--red)"></div><div class="legend-lbl">Losses</div><div class="legend-val">255 (51%)</div></div>
+          <div style="height:1px;background:var(--border);margin:14px 0"></div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.7">Near-perfect balance between wins and losses across 500 innings, confirming high dataset integrity and competitive parity.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Team Radar – Multi-Metric</div>
+        <span class="card-badge badge-blue">Radar Chart</span>
+      </div>
+      <div class="chart-wrap" style="height:230px"><canvas id="chartRadar"></canvas></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Built with <strong>HTML · CSS · JavaScript · Chart.js</strong> &nbsp;·&nbsp; Data: IPL 2024–25 Season (500 Matches) &nbsp;·&nbsp; 8 Teams · 8 Venues
+</footer>
+
+<!-- ═══ INSIGHTS MODAL ═══ -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeInsights()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-left">
+        <div class="modal-icon">💡</div>
+        <div>
+          <div class="modal-title">Dataset Insights</div>
+          <div class="modal-subtitle">10 Key findings from 500 IPL matches</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeInsights()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Insights injected by JS -->
+    </div>
+    <div class="modal-foot">
+      <div class="modal-foot-note">📊 Based on advanced_ipl_dataset_500.csv · Season 2024–25</div>
+      <button class="btn-close-modal" onclick="closeInsights()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   DATA
+══════════════════════════════════════ */
+const TEAM_STATS = {"CSK":{"wins":39,"total":62,"win_rate":62.9,"avg_runs":171.7,"avg_sr":153.1,"avg_econ":8.71,"avg_wickets":5.1,"avg_overs":17.6,"max_runs":249,"min_runs":102},"DC":{"wins":31,"total":65,"win_rate":47.7,"avg_runs":181.5,"avg_sr":146.2,"avg_econ":8.2,"avg_wickets":5.4,"avg_overs":17.5,"max_runs":245,"min_runs":117},"KKR":{"wins":33,"total":65,"win_rate":50.8,"avg_runs":166.3,"avg_sr":157.0,"avg_econ":8.65,"avg_wickets":4.9,"avg_overs":17.7,"max_runs":248,"min_runs":100},"MI":{"wins":28,"total":60,"win_rate":46.7,"avg_runs":168.6,"avg_sr":152.8,"avg_econ":8.18,"avg_wickets":5.0,"avg_overs":17.4,"max_runs":248,"min_runs":102},"PBKS":{"wins":35,"total":68,"win_rate":51.5,"avg_runs":173.1,"avg_sr":152.2,"avg_econ":8.63,"avg_wickets":5.3,"avg_overs":17.7,"max_runs":239,"min_runs":100},"RCB":{"wins":21,"total":51,"win_rate":41.2,"avg_runs":178.8,"avg_sr":146.9,"avg_econ":8.6,"avg_wickets":5.0,"avg_overs":17.9,"max_runs":244,"min_runs":110},"RR":{"wins":25,"total":61,"win_rate":41.0,"avg_runs":176.2,"avg_sr":151.8,"avg_econ":8.52,"avg_wickets":5.3,"avg_overs":17.6,"max_runs":250,"min_runs":105},"SRH":{"wins":33,"total":68,"win_rate":48.5,"avg_runs":174.5,"avg_sr":146.4,"avg_econ":8.77,"avg_wickets":4.4,"avg_overs":17.2,"max_runs":247,"min_runs":100}};
+
+const VENUE_STATS = {"Mumbai":{"matches":60,"avg_runs":174.6,"win_pct":45.0,"avg_sr":148.2},"Chennai":{"matches":73,"avg_runs":175.3,"win_pct":53.4,"avg_sr":152.6},"Mohali":{"matches":73,"avg_runs":177.8,"win_pct":49.3,"avg_sr":154.0},"Jaipur":{"matches":74,"avg_runs":176.5,"win_pct":44.6,"avg_sr":143.8},"Hyderabad":{"matches":57,"avg_runs":172.6,"win_pct":49.1,"avg_sr":151.0},"Delhi":{"matches":59,"avg_runs":173.1,"win_pct":49.2,"avg_sr":152.2},"Bangalore":{"matches":52,"avg_runs":168.5,"win_pct":40.4,"avg_sr":153.9},"Kolkata":{"matches":52,"avg_runs":168.3,"win_pct":61.5,"avg_sr":152.4}};
+
+const TOP_SCORES = [{"Team":"RR","Opponent":"CSK","Venue":"Chennai","Runs":250,"Result":"Win","Date":"2024-07-27"},{"Team":"CSK","Opponent":"RCB","Venue":"Bangalore","Runs":249,"Result":"Win","Date":"2024-12-21"},{"Team":"KKR","Opponent":"RR","Venue":"Chennai","Runs":248,"Result":"Win","Date":"2024-04-10"},{"Team":"MI","Opponent":"CSK","Venue":"Hyderabad","Runs":248,"Result":"Loss","Date":"2024-08-10"},{"Team":"CSK","Opponent":"MI","Venue":"Jaipur","Runs":247,"Result":"Loss","Date":"2024-10-21"},{"Team":"SRH","Opponent":"RCB","Venue":"Delhi","Runs":247,"Result":"Win","Date":"2025-03-09"},{"Team":"SRH","Opponent":"MI","Venue":"Delhi","Runs":247,"Result":"Loss","Date":"2025-03-19"},{"Team":"RR","Opponent":"CSK","Venue":"Bangalore","Runs":247,"Result":"Loss","Date":"2025-04-11"},{"Team":"SRH","Opponent":"CSK","Venue":"Jaipur","Runs":246,"Result":"Win","Date":"2025-07-05"},{"Team":"DC","Opponent":"KKR","Venue":"Bangalore","Runs":245,"Result":"Loss","Date":"2025-04-04"}];
+
+const MONTHLY = [{"month":"2024-03","avg_runs":185.1,"matches":31},{"month":"2024-04","avg_runs":168.0,"matches":30},{"month":"2024-05","avg_runs":178.8,"matches":31},{"month":"2024-06","avg_runs":175.6,"matches":30},{"month":"2024-07","avg_runs":169.8,"matches":31},{"month":"2024-08","avg_runs":180.6,"matches":31},{"month":"2024-09","avg_runs":171.5,"matches":30},{"month":"2024-10","avg_runs":167.1,"matches":31},{"month":"2024-11","avg_runs":167.7,"matches":30},{"month":"2024-12","avg_runs":173.2,"matches":31},{"month":"2025-01","avg_runs":176.2,"matches":31},{"month":"2025-02","avg_runs":178.4,"matches":28},{"month":"2025-03","avg_runs":168.0,"matches":31},{"month":"2025-04","avg_runs":175.2,"matches":30},{"month":"2025-05","avg_runs":170.3,"matches":31},{"month":"2025-06","avg_runs":172.5,"matches":30},{"month":"2025-07","avg_runs":178.9,"matches":13}];
+
+const H2H = {"CSK_vs_DC":{"wins":9,"total":12},"CSK_vs_KKR":{"wins":7,"total":14},"CSK_vs_MI":{"wins":6,"total":10},"CSK_vs_PBKS":{"wins":3,"total":4},"CSK_vs_RCB":{"wins":5,"total":9},"CSK_vs_RR":{"wins":4,"total":4},"CSK_vs_SRH":{"wins":5,"total":9},"DC_vs_CSK":{"wins":7,"total":12},"DC_vs_KKR":{"wins":0,"total":5},"DC_vs_MI":{"wins":3,"total":5},"DC_vs_PBKS":{"wins":8,"total":14},"DC_vs_RCB":{"wins":6,"total":13},"DC_vs_RR":{"wins":1,"total":5},"DC_vs_SRH":{"wins":6,"total":11},"KKR_vs_CSK":{"wins":3,"total":11},"KKR_vs_DC":{"wins":4,"total":7},"KKR_vs_MI":{"wins":7,"total":12},"KKR_vs_PBKS":{"wins":6,"total":10},"KKR_vs_RCB":{"wins":4,"total":10},"KKR_vs_RR":{"wins":5,"total":7},"KKR_vs_SRH":{"wins":4,"total":8},"MI_vs_CSK":{"wins":3,"total":12},"MI_vs_DC":{"wins":2,"total":7},"MI_vs_KKR":{"wins":4,"total":7},"MI_vs_PBKS":{"wins":5,"total":7},"MI_vs_RCB":{"wins":1,"total":5},"MI_vs_RR":{"wins":8,"total":9},"MI_vs_SRH":{"wins":5,"total":13},"PBKS_vs_CSK":{"wins":5,"total":11},"PBKS_vs_DC":{"wins":4,"total":7},"PBKS_vs_KKR":{"wins":6,"total":10},"PBKS_vs_MI":{"wins":3,"total":8},"PBKS_vs_RCB":{"wins":5,"total":11},"PBKS_vs_RR":{"wins":7,"total":13},"PBKS_vs_SRH":{"wins":5,"total":8},"RCB_vs_CSK":{"wins":0,"total":2},"RCB_vs_DC":{"wins":1,"total":3},"RCB_vs_KKR":{"wins":4,"total":10},"RCB_vs_MI":{"wins":1,"total":4},"RCB_vs_PBKS":{"wins":8,"total":13},"RCB_vs_RR":{"wins":1,"total":7},"RCB_vs_SRH":{"wins":6,"total":12},"RR_vs_CSK":{"wins":4,"total":7},"RR_vs_DC":{"wins":5,"total":12},"RR_vs_KKR":{"wins":0,"total":5},"RR_vs_MI":{"wins":3,"total":8},"RR_vs_PBKS":{"wins":5,"total":9},"RR_vs_RCB":{"wins":4,"total":10},"RR_vs_SRH":{"wins":4,"total":10},"SRH_vs_CSK":{"wins":5,"total":11},"SRH_vs_DC":{"wins":5,"total":10},"SRH_vs_KKR":{"wins":4,"total":7},"SRH_vs_MI":{"wins":5,"total":11},"SRH_vs_PBKS":{"wins":5,"total":9},"SRH_vs_RCB":{"wins":4,"total":8},"SRH_vs_RR":{"wins":5,"total":12}};
+
+const RUNS_DIST_LABELS = ["100-119","120-139","140-159","160-179","180-199","200-219","220-239","240+"];
+const RUNS_DIST_COUNTS = [62,65,75,76,64,54,85,19];
+
+const TEAM_COLORS = {
+  CSK:'#FFB800', DC:'#4EA8DE', KKR:'#9B5DE5',
+  MI:'#00D4AA', PBKS:'#FF4757', RCB:'#FF6B2B',
+  RR:'#2ED573', SRH:'#F7971E'
+};
+const TEAM_COLORS_ALPHA = {};
+Object.keys(TEAM_COLORS).forEach(t => {
+  TEAM_COLORS_ALPHA[t] = TEAM_COLORS[t]+'30';
+});
+
+const TEAMS = Object.keys(TEAM_STATS);
+const chartDefaults = {
+  color:'#9499B0',
+  borderColor:'rgba(255,255,255,0.07)',
+  font:{family:"'DM Sans',sans-serif",size:11}
+};
+
+/* ══════════════════════════════════════
+   CLOCK
+══════════════════════════════════════ */
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})+' IST';
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ══════════════════════════════════════
+   ANIMATED COUNTERS
+══════════════════════════════════════ */
+function animCounter(id,target,duration=1200,decimals=0){
+  const el=document.getElementById(id);
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    const val=ease*target;
+    el.textContent=decimals?val.toFixed(decimals):Math.round(val);
+    if(p<1) requestAnimationFrame(step);
+    else el.textContent=decimals?target.toFixed(decimals):target;
+  }
+  requestAnimationFrame(step);
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  animCounter('kv-matches',500,1000);
+  animCounter('kv-teams',8,600);
+  animCounter('kv-avgruns',173.8,1200,1);
+  animCounter('kv-avgsr',150.9,1300,1);
+  animCounter('kv-maxruns',250,1100);
+  animCounter('kv-venues',8,600);
+});
+
+/* ══════════════════════════════════════
+   CHART HELPERS
+══════════════════════════════════════ */
+Chart.defaults.color='#9499B0';
+Chart.defaults.borderColor='rgba(255,255,255,0.06)';
+Chart.defaults.font={family:"'DM Sans',sans-serif",size:11};
+
+function hBar(id,labels,data,colors,opts={}){
+  const ctx=document.getElementById(id).getContext('2d');
+  return new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{data,backgroundColor:colors,borderRadius:5,borderSkipped:false}]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'#13151F',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+        padding:10,cornerRadius:8,
+        callbacks:{label:ctx=>`  ${opts.prefix||''}${ctx.raw}${opts.suffix||''}`}
+      }},
+      scales:{
+        x:{display:true,grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#5A5F7A'},
+          min:opts.xMin||0,max:opts.xMax
+        },
+        y:{grid:{display:false},ticks:{color:'#9499B0',font:{weight:'500'}}}
+      },
+      animation:{duration:900,easing:'easeOutQuart'}
+    }
+  });
+}
+
+/* ══════════════════════════════════════
+   BUILD CHARTS
+══════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  const teams=TEAMS;
+
+  /* Win Rate */
+  const wrTeams=['CSK','PBKS','KKR','SRH','DC','MI','RCB','RR'];
+  hBar('chartWinRate',
+    wrTeams, wrTeams.map(t=>TEAM_STATS[t].win_rate),
+    wrTeams.map(t=>TEAM_COLORS[t]),
+    {suffix:'%',xMin:30,xMax:75}
+  );
+
+  /* Avg Runs */
+  const runTeams=['DC','RCB','RR','SRH','PBKS','CSK','MI','KKR'];
+  hBar('chartAvgRuns',
+    runTeams, runTeams.map(t=>TEAM_STATS[t].avg_runs),
+    runTeams.map(t=>TEAM_COLORS[t]),
+    {xMin:155,xMax:195}
+  );
+
+  /* Strike Rate */
+  const srTeams=['KKR','CSK','MI','PBKS','RR','RCB','SRH','DC'];
+  hBar('chartSR',
+    srTeams, srTeams.map(t=>TEAM_STATS[t].avg_sr),
+    srTeams.map(t=>TEAM_COLORS[t]),
+    {xMin:140,xMax:165}
+  );
+
+  /* Economy */
+  const econTeams=['MI','DC','RR','RCB','PBKS','KKR','CSK','SRH'];
+  hBar('chartEcon',
+    econTeams, econTeams.map(t=>TEAM_STATS[t].avg_econ),
+    econTeams.map(t=>TEAM_COLORS[t]),
+    {xMin:7.5,xMax:9.5}
+  );
+
+  /* Runs Distribution */
+  const grad=document.getElementById('chartRunsDist').getContext('2d').createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba(255,107,43,0.8)');
+  grad.addColorStop(1,'rgba(255,107,43,0.1)');
+  new Chart(document.getElementById('chartRunsDist').getContext('2d'),{
+    type:'bar',
+    data:{labels:RUNS_DIST_LABELS,datasets:[{data:RUNS_DIST_COUNTS,backgroundColor:grad,borderRadius:4,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'#13151F',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:8
+      }},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#5A5F7A',maxRotation:40}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5F7A'}}
+      },
+      animation:{duration:1000}
+    }
+  });
+
+  /* Monthly Trend */
+  const gradLine=document.getElementById('chartMonthly').getContext('2d').createLinearGradient(0,0,0,180);
+  gradLine.addColorStop(0,'rgba(255,107,43,0.25)');
+  gradLine.addColorStop(1,'rgba(255,107,43,0)');
+  new Chart(document.getElementById('chartMonthly').getContext('2d'),{
+    type:'line',
+    data:{
+      labels:MONTHLY.map(m=>m.month.replace('2024-','').replace('2025-','').replace(/^0/,'') + (m.month.includes('2025')?"'25":"'24")),
+      datasets:[{
+        data:MONTHLY.map(m=>m.avg_runs),
+        borderColor:'#FF6B2B',borderWidth:2.5,
+        backgroundColor:gradLine,fill:true,
+        tension:0.4,pointRadius:3,pointBackgroundColor:'#FF6B2B',
+        pointHoverRadius:6,pointHoverBackgroundColor:'#FFB800'
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'#13151F',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:8,
+        callbacks:{label:c=>`  Avg Runs: ${c.raw}`}
+      }},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#5A5F7A'}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5F7A'},min:155,max:195}
+      },
+      animation:{duration:1200}
+    }
+  });
+
+  /* Donut */
+  new Chart(document.getElementById('chartDonut').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Wins','Losses'],
+      datasets:[{data:[245,255],backgroundColor:['#2ED573','#FF4757'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'#13151F',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:8
+      }},
+      animation:{duration:1200}
+    }
+  });
+
+  /* Radar */
+  const radarTeams=['CSK','KKR','MI','RCB','SRH'];
+  const normalize=(val,min,max)=>((val-min)/(max-min)*100).toFixed(1);
+  new Chart(document.getElementById('chartRadar').getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:['Win Rate','Avg Runs','Strike Rate','Low Economy','Avg Wickets','Max Score'],
+      datasets:radarTeams.map(t=>({
+        label:t,
+        data:[
+          TEAM_STATS[t].win_rate,
+          normalize(TEAM_STATS[t].avg_runs,160,185),
+          normalize(TEAM_STATS[t].avg_sr,145,160),
+          normalize(12-TEAM_STATS[t].avg_econ,3,4),
+          TEAM_STATS[t].avg_wickets*10,
+          normalize(TEAM_STATS[t].max_runs,230,255)
+        ],
+        borderColor:TEAM_COLORS[t],backgroundColor:TEAM_COLORS[t]+'18',
+        borderWidth:2,pointRadius:3,pointBackgroundColor:TEAM_COLORS[t]
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{
+        display:true,position:'bottom',
+        labels:{color:'#9499B0',font:{size:10},boxWidth:10,padding:10}
+      },tooltip:{
+        backgroundColor:'#13151F',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:8
+      }},
+      scales:{r:{
+        grid:{color:'rgba(255,255,255,0.06)'},
+        angleLines:{color:'rgba(255,255,255,0.06)'},
+        ticks:{display:false},
+        pointLabels:{color:'#9499B0',font:{size:10}}
+      }},
+      animation:{duration:1200}
+    }
+  });
+
+  /* Venue Table */
+  const venuesSorted=Object.entries(VENUE_STATS).sort((a,b)=>b[1].avg_runs-a[1].avg_runs);
+  const maxWin=Math.max(...Object.values(VENUE_STATS).map(v=>v.win_pct));
+  const tbody=document.getElementById('venue-tbody');
+  venuesSorted.forEach(([v,s])=>{
+    const wpct=(s.win_pct/maxWin*100).toFixed(0);
+    const runPct=((s.avg_runs-165)/(180-165)*100).toFixed(0);
+    const wColor=s.win_pct>55?'#2ED573':s.win_pct>48?'#FFB800':'#FF4757';
+    tbody.innerHTML+=`<tr>
+      <td style="font-weight:500;color:var(--txt)">${v}</td>
+      <td style="color:var(--txt2)">${s.matches}</td>
+      <td>
+        <span style="color:var(--gold);font-weight:600">${s.avg_runs}</span>
+        <div class="mini-bar-track" style="margin-left:6px"><div class="mini-bar-fill" style="width:${runPct}%;background:var(--gold)"></div></div>
+      </td>
+      <td>
+        <span style="color:${wColor};font-weight:600">${s.win_pct}%</span>
+        <div class="mini-bar-track" style="margin-left:6px"><div class="mini-bar-fill" style="width:${wpct}%;background:${wColor}"></div></div>
+      </td>
+      <td style="color:var(--txt2)">${s.avg_sr}</td>
+    </tr>`;
+  });
+
+  /* Top Scores */
+  const rankClass=['r1','r2','r3','rn','rn','rn','rn','rn','rn','rn'];
+  const stbody=document.getElementById('scores-tbody');
+  TOP_SCORES.forEach((s,i)=>{
+    const rc=s.Result==='Win'?'result-win':'result-loss';
+    const tc=TEAM_COLORS[s.Team];
+    stbody.innerHTML+=`<tr>
+      <td><span class="rank-num ${rankClass[i]}">${i+1}</span></td>
+      <td><span class="team-tag" style="background:${tc}22;color:${tc}">${s.Team}</span></td>
+      <td style="color:var(--txt2);font-size:12px">${s.Opponent}</td>
+      <td style="color:var(--txt2);font-size:12px">${s.Venue}</td>
+      <td style="font-weight:700;color:var(--txt);font-family:'Syne',sans-serif">${s.Runs}</td>
+      <td><span class="${rc}">${s.Result}</span></td>
+    </tr>`;
+  });
+
+  /* H2H + Profile initial */
+  updateH2H();
+  updateProfile();
+});
+
+/* ══════════════════════════════════════
+   HEAD-TO-HEAD
+══════════════════════════════════════ */
+function updateH2H(){
+  const a=document.getElementById('h2h-a').value;
+  const b=document.getElementById('h2h-b').value;
+  if(a===b){
+    document.getElementById('h2h-wins-a').textContent='–';
+    document.getElementById('h2h-wins-b').textContent='–';
+    document.getElementById('h2h-total').textContent='Same team!';
+    return;
+  }
+  const keyAB=`${a}_vs_${b}`;
+  const keyBA=`${b}_vs_${a}`;
+  const dAB=H2H[keyAB]||{wins:0,total:0};
+  const dBA=H2H[keyBA]||{wins:0,total:0};
+  const totalA=dAB.wins; const totalB=dBA.wins;
+  const total=dAB.total||dBA.total;
+  const pctA=total?((totalA/total)*100).toFixed(0):50;
+  document.getElementById('h2h-wins-a').textContent=totalA;
+  document.getElementById('h2h-wins-b').textContent=totalB;
+  document.getElementById('h2h-label-a').textContent=a+' Wins';
+  document.getElementById('h2h-label-b').textContent=b+' Wins';
+  document.getElementById('h2h-total').textContent=total;
+  document.getElementById('h2h-total-lbl').textContent='Total matches';
+  document.getElementById('h2h-bar-a').style.width=pctA+'%';
+  document.getElementById('h2h-bar-a').style.background=TEAM_COLORS[a];
+  document.getElementById('h2h-bar-b').style.background=TEAM_COLORS[b];
+  document.getElementById('h2h-pct').textContent=`${a}: ${pctA}% · ${b}: ${100-pctA}%`;
+}
+
+/* ══════════════════════════════════════
+   TEAM PROFILE
+══════════════════════════════════════ */
+function updateProfile(){
+  const t=document.getElementById('profile-team').value;
+  const s=TEAM_STATS[t];
+  const col=TEAM_COLORS[t];
+  const set=(id,val,pct)=>{
+    document.getElementById('pr-'+id).style.width=pct+'%';
+    document.getElementById('pr-'+id).style.background=col;
+    document.getElementById('pv-'+id).textContent=val;
+  };
+  set('winrate',s.win_rate+'%',(s.win_rate/70*100).toFixed(0));
+  set('runs',s.avg_runs,((s.avg_runs-160)/25*100).toFixed(0));
+  set('sr',s.avg_sr,((s.avg_sr-143)/18*100).toFixed(0));
+  set('econ',s.avg_econ,((s.avg_econ-8)/1*100).toFixed(0));
+  set('wk',s.avg_wickets,(s.avg_wickets/10*100).toFixed(0));
+  set('max',s.max_runs,((s.max_runs-230)/25*100).toFixed(0));
+}
+
+/* ══════════════════════════════════════
+   INSIGHTS MODAL
+══════════════════════════════════════ */
+const INSIGHTS = [
+  {
+    color:'var(--gold)',bg:'rgba(255,184,0,0.12)',
+    title:'CSK dominates with a 62.9% win rate',
+    text:'<strong>CSK</strong> leads all 8 teams by a significant margin, winning nearly 63% of their 62 matches — nearly 12 points ahead of the next best team (PBKS at 51.5%). Their consistency makes them the standout franchise of the season.'
+  },
+  {
+    color:'var(--accent)',bg:'rgba(255,107,43,0.12)',
+    title:'High-scoring ≠ high-winning',
+    text:'<strong>DC averages the most runs</strong> (181.5 per inning) yet wins only 47.7% of their games. Meanwhile CSK scores a modest 171.7 but wins 62.9% — proving that bowling, fielding, and game awareness matter more than raw run accumulation.'
+  },
+  {
+    color:'var(--teal)',bg:'rgba(0,212,170,0.12)',
+    title:'KKR hits fastest, but efficiency varies',
+    text:'<strong>KKR</strong> boasts the highest average strike rate (157.0), suggesting explosive batting. However, their win rate sits at 50.8% — highlighting that pure aggression without control does not guarantee wins.'
+  },
+  {
+    color:'var(--blue)',bg:'rgba(78,168,222,0.12)',
+    title:'MI are the most economical bowling side',
+    text:'<strong>MI</strong> concedes only 8.18 runs per over — the best economy in the competition — yet still only win 46.7% of matches. Bowling miserliness alone isn\'t enough without corresponding batting firepower (168.6 avg runs).'
+  },
+  {
+    color:'var(--purple)',bg:'rgba(155,93,229,0.12)',
+    title:'Kolkata is the toughest away ground (61.5% home wins)',
+    text:'The <strong>Kolkata</strong> venue records a 61.5% win rate — the highest home advantage of any stadium. In contrast, Bangalore\'s win rate of just 40.4% suggests that venue heavily favours visiting teams or produces unpredictable results.'
+  },
+  {
+    color:'var(--green)',bg:'rgba(46,213,115,0.12)',
+    title:'RCB: High scorers, inconsistent winners',
+    text:'<strong>RCB</strong> averages 178.8 runs per inning (2nd highest overall) but wins only 41.2% — the 2nd worst win rate. This classic pattern reflects a batting-heavy squad that struggles with bowling depth and match finishing.'
+  },
+  {
+    color:'var(--gold)',bg:'rgba(255,184,0,0.1)',
+    title:'220-239 run bracket is the most common scoreline',
+    text:'The runs distribution reveals a surprising peak in the <strong>220–239 band (85 innings)</strong> — more than any other bucket including 160–179. This suggests teams are capable of posting very high totals far more often than historical IPL data would indicate.'
+  },
+  {
+    color:'var(--accent)',bg:'rgba(255,107,43,0.1)',
+    title:'Mohali & Jaipur are batting paradises',
+    text:'The two highest-match venues (<strong>Jaipur</strong> with 74 games, <strong>Mohali</strong> with 73) also rank among the top 2 for average runs — 176.5 and 177.8 respectively — confirming these are flat, high-scoring pitches that heavily favour batters.'
+  },
+  {
+    color:'var(--red)',bg:'rgba(255,71,87,0.1)',
+    title:'High scores do not guarantee wins',
+    text:'Of the top 10 highest individual scores, <strong>4 resulted in losses</strong> — including MI\'s 248 against CSK and CSK\'s own 247 against MI. This underlines that chasing teams performed remarkably well when targets were set above 240.'
+  },
+  {
+    color:'var(--teal)',bg:'rgba(0,212,170,0.1)',
+    title:'Dataset integrity is exceptional',
+    text:'With <strong>0 null values, 0 duplicates</strong>, and all numerical fields within valid cricket ranges (overs 15–20, wickets 0–10, runs 100–250), this is a clean, analysis-ready dataset — ideal for machine learning, predictive modelling, and sports analytics research.'
+  }
+];
+
+function openInsights(){
+  const modal=document.getElementById('modal');
+  const body=document.getElementById('modal-body');
+  body.innerHTML='';
+  INSIGHTS.forEach((ins,i)=>{
+    const card=document.createElement('div');
+    card.className='insight-card';
+    card.innerHTML=`
+      <div class="insight-num" style="background:${ins.bg};color:${ins.color}">${i+1}</div>
+      <div class="insight-text">
+        <div style="font-weight:600;color:var(--txt);margin-bottom:4px;font-size:13px">${ins.title}</div>
+        ${ins.text}
+      </div>`;
+    body.appendChild(card);
+    setTimeout(()=>card.classList.add('visible'), i*80+100);
+  });
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeInsights(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInsights();});
+</script>
+</body>
+</html>
